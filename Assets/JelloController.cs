@@ -72,7 +72,7 @@ public class JelloController : MonoBehaviour
         for (int i = 0; i < colliders.Length; i++)
             if (colliders[i].gameObject != gameObject)
             {
-                if (originallyGrounded)
+                if (!originallyGrounded)
                     OnGrounded();
                 grounded = true;
             }
