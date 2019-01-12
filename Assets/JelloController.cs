@@ -24,7 +24,7 @@ public class JelloController : MonoBehaviour
 
         rb2D.AddRelativeForce(new Vector2(Input.GetAxis("Horizontal") * speed , 0), ForceMode2D.Impulse);
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow))
             rb2D.AddRelativeForce(new Vector2(0, jumpHeight * 10), ForceMode2D.Impulse);
     }
 
