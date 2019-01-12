@@ -65,14 +65,14 @@ public class JelloController : MonoBehaviour
 
     public void FixedUpdate()
     {
-        bool originallyGrounded = grounded;
+        bool pastFrameGrounded = grounded;
         grounded = false;
         
         Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheck.position, 0.2f, groundLayer);
         for (int i = 0; i < colliders.Length; i++)
             if (colliders[i].gameObject != gameObject)
             {
-                if (!originallyGrounded)
+                if (!pastFrameGrounded)
                     OnGrounded();
                 grounded = true;
             }
@@ -101,20 +101,20 @@ public class JelloController : MonoBehaviour
 
         canMove = false;
         animator.SetBool("HeavyAttack", true);
-
         while (curTime < 3.0f)
         {
             curTime += Time.deltaTime;
-
-            if (Input.GetKeyUp(KeyCode.X))
+            if (!Input.GetKey(KeyCode.X))
                 keyUp = true;
+            if (Input.GetKeyDown(KeyCode.Y))
+                Debug.Log("Y Pressed");
 
             yield return new WaitForEndOfFrame();
         }
 
         while (!keyUp)
         {
-            if (Input.GetKeyUp(KeyCode.X))
+            if (!Input.GetKey(KeyCode.X))
             {
                 keyUp = true;
                 Debug.Log("hit");
@@ -123,6 +123,7 @@ public class JelloController : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
+        Debug.Log("Checkpoint");
         animator.SetBool("HeavyAttack", false);
         yield return new WaitForSeconds(2.0f);
 
