@@ -4,22 +4,44 @@ using UnityEngine;
 
 public class JelloController : MonoBehaviour
 {
+    [Header("Options")]
+    [SerializeField]
+    private int maxJumps = 3;
+    [SerializeField]
+    private int originalSpeed = 5;
+    [SerializeField]
+    private int originalJumpHeight = 5;
+    [SerializeField]
+    private float fallMultiplier = 2.5f;
+
+    [Header("Components")]
     public Animator animator;
     public Rigidbody2D rb2D;
-
-    public bool jumping;
-
-    public int jumpHeight = 5;
-    public float fallMultiplier = 2.5f;
-    public int speed = 5;
-    public bool facingRight = true;
     public SpriteRenderer spriteRenderer;
+
+    [Header("Misc")]
+    public int jumpHeight;
+    public int speed;
+    public bool canMove = true;
+    public bool facingRight = true;
+    public bool grounded;
+    public int jumpsLeft;
+
+    public Transform groundCheck;
+    public LayerMask groundLayer;
+
+    public void Awake()
+    {
+        speed = originalSpeed;
+        jumpsLeft = maxJumps;
+        jumpHeight = originalJumpHeight;
+    }
 
     public void Update()
     {
         spriteRenderer.flipX = !facingRight;
 
-        if (speed > 0)
+        if (canMove)
         {
             if (Input.GetAxis("Horizontal") == 1.0f)
                 facingRight = true;
@@ -31,17 +53,37 @@ public class JelloController : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.C))
                 StartCoroutine(LightAttack());
 
-            rb2D.AddRelativeForce(new Vector2(Input.GetAxis("Horizontal") * speed, 0), ForceMode2D.Impulse);
+            rb2D.velocity = new Vector2(Input.GetAxis("Horizontal") * speed, rb2D.velocity.y);
 
-            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.UpArrow))
+            if (Input.GetButtonDown("Jump") && jumpsLeft > 0)
+            {
                 rb2D.AddRelativeForce(new Vector2(0, jumpHeight * 10), ForceMode2D.Impulse);
+                jumpsLeft--;
+            }
         }
     }
 
     public void FixedUpdate()
     {
+        bool originallyGrounded = grounded;
+        grounded = false;
+        
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(groundCheck.position, 0.2f, groundLayer);
+        for (int i = 0; i < colliders.Length; i++)
+            if (colliders[i].gameObject != gameObject)
+            {
+                if (originallyGrounded)
+                    OnGrounded();
+                grounded = true;
+            }
+
         if (rb2D.velocity.y < 0)
             rb2D.velocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+    }
+
+    public void OnGrounded()
+    {
+        jumpsLeft = maxJumps;
     }
 
     public IEnumerator LightAttack()
@@ -55,9 +97,9 @@ public class JelloController : MonoBehaviour
     public IEnumerator HeavyAttack()
     {
         float curTime = 0.0f;
-        bool keyUp = false; 
+        bool keyUp = false;
 
-        speed = 0;
+        canMove = false;
         animator.SetBool("HeavyAttack", true);
 
         while (curTime < 3.0f)
@@ -78,14 +120,13 @@ public class JelloController : MonoBehaviour
                 Debug.Log("hit");
             }
            
-
             yield return new WaitForEndOfFrame();
         }
 
         animator.SetBool("HeavyAttack", false);
         yield return new WaitForSeconds(2.0f);
 
-        speed = 5;
+        canMove = true;
     }
 }
 
