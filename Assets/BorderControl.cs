@@ -6,7 +6,7 @@ public class BorderControl : MonoBehaviour
 {
     public void OnTriggerEnter2D(Collider2D col)
     {
-        if (col.gameObject.name == "Jello")
+        if (col.tag == "Player")
             col.gameObject.transform.position = new Vector2(0, 0);
     }
 }
